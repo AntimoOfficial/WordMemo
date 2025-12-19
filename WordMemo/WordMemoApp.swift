@@ -12,9 +12,14 @@ import SwiftData
 struct WordMemoApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            WordList.self,
+            WordEntry.self,
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        let modelConfiguration = ModelConfiguration(
+            schema: schema,
+            isStoredInMemoryOnly: false,
+            cloudKitDatabase: .private("iCloud.com.antimo.WordMemo")
+        )
 
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
