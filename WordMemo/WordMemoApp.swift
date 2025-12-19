@@ -10,16 +10,25 @@ import SwiftData
 
 @main
 struct WordMemoApp: App {
+    private static var isPreview: Bool {
+        ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+    }
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             WordList.self,
             WordEntry.self,
         ])
-        let modelConfiguration = ModelConfiguration(
-            schema: schema,
-            isStoredInMemoryOnly: false,
-            cloudKitDatabase: .private("iCloud.com.antimo.WordMemo")
-        )
+        let modelConfiguration: ModelConfiguration
+        if WordMemoApp.isPreview {
+            modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        } else {
+            modelConfiguration = ModelConfiguration(
+                schema: schema,
+                isStoredInMemoryOnly: false,
+                cloudKitDatabase: .private("iCloud.com.antimo.WordMemo")
+            )
+        }
 
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])

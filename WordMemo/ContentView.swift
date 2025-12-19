@@ -62,7 +62,7 @@ struct ContentView: View {
             }
         }
         .onAppear { bootstrapIfNeeded() }
-        .onChange(of: lists) { _ in ensureSelection() }
+        .onChange(of: lists) { ensureSelection() }
     }
 
     private func bootstrapIfNeeded() {
@@ -90,24 +90,32 @@ struct ContentView: View {
     }
 
     private func seedSampleData(in list: WordList) {
-        let examples = [
-            ("serendipity", "[ˌserənˈdɪpəti]", "n.", "意外收获"),
-            ("contemplate", "[ˈkɒntəmpleɪt]", "v.", "沉思"),
-            ("ubiquitous", "[juːˈbɪkwɪtəs]", "adj.", "无所不在的"),
-            ("synergy", "[ˈsɪnərdʒi]", "n.", "协同效应")
-        ]
-        for item in examples {
+        for seed in WordSeed.samples {
             let entry = WordEntry(
-                term: item.0,
-                pronunciation: item.1,
-                partOfSpeech: item.2,
-                definition: item.3,
+                term: seed.term,
+                pronunciation: seed.pronunciation,
+                partOfSpeech: seed.partOfSpeech,
+                definition: seed.definition,
                 proficiency: 0,
                 list: list
             )
             modelContext.insert(entry)
         }
     }
+}
+
+private struct WordSeed {
+    let term: String
+    let pronunciation: String
+    let partOfSpeech: String
+    let definition: String
+
+    static let samples: [WordSeed] = [
+        WordSeed(term: "serendipity", pronunciation: "[ˌserənˈdɪpəti]", partOfSpeech: "n.", definition: "意外收获"),
+        WordSeed(term: "contemplate", pronunciation: "[ˈkɒntəmpleɪt]", partOfSpeech: "v.", definition: "沉思"),
+        WordSeed(term: "ubiquitous", pronunciation: "[juːˈbɪkwɪtəs]", partOfSpeech: "adj.", definition: "无所不在的"),
+        WordSeed(term: "synergy", pronunciation: "[ˈsɪnərdʒi]", partOfSpeech: "n.", definition: "协同效应")
+    ]
 }
 
 private struct WordListPicker: View {
@@ -269,9 +277,7 @@ private struct WordListsView: View {
                     ContentUnavailableView(
                         "没有单词",
                         systemImage: "text.book.closed.fill",
-                        description: {
-                            Text("点击右下角添加一个词条")
-                        }
+                        description: Text("点击右下角添加一个词条")
                     )
                 }
             }
@@ -715,13 +721,14 @@ private struct StudySessionView: View {
     var body: some View {
         VStack(spacing: 16) {
             if queue.isEmpty {
-                ContentUnavailableView(
-                    "当前单词本都达到熟练标准",
-                    systemImage: "checkmark.seal.fill",
-                    description: {
-                        Button("返回") { dismiss() }
-                    }
-                )
+                VStack(spacing: 12) {
+                    ContentUnavailableView(
+                        "当前单词本都达到熟练标准",
+                        systemImage: "checkmark.seal.fill",
+                        description: Text("今天已完成背诵")
+                    )
+                    Button("返回") { dismiss() }
+                }
             } else if let word = currentWord {
                 Text("剩余 \(queue.count - currentIndex) / \(queue.count)")
                     .font(.subheadline)
